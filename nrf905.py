@@ -42,10 +42,10 @@ class NRF905:
     NRF_RX_ADDRESS_BYTE_2 = 0xCC
     NRF_RX_ADDRESS_BYTE_3 = 0xCC
 
-    NRF_UP_CLK_FREQ_4MHz - 0x00
-    NRF_UP_CLK_FREQ_2MHz - 0x01
-    NRF_UP_CLK_FREQ_1MHz - 0x02
-    NRF_UP_CLK_FREQ_500kHz - 0x03
+    NRF_UP_CLK_FREQ_4MHz = 0x00
+    NRF_UP_CLK_FREQ_2MHz = 0x01
+    NRF_UP_CLK_FREQ_1MHz = 0x02
+    NRF_UP_CLK_FREQ_500kHz = 0x03
 
 
     def __init__ (self, spi, ce, txe, pwr, cd, am, dr):
