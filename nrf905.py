@@ -3,7 +3,6 @@ import utime
 
 
 class NRF905:
-
     NRF_CHANNEL = 66
 
     NRF_433Mhz = 0x00
@@ -72,7 +71,7 @@ class NRF905:
 
     NRF_TX_ADDRESS_LENGHT = 4
 
-    NRF_RF_CONFIG_BUFFER_LENGHT = 11
+    NRF_RF_CONFIG_BUFFER_LENGHT = 10
 
     NRF_WC_COMMAND = 0x00
     NRF_RC_COMMAND = 0x10
@@ -129,14 +128,14 @@ class NRF905:
         BYTE_6 = (self.NRF_RX_ADDRESS_BYTE_1)
         BYTE_7 = (self.NRF_RX_ADDRESS_BYTE_2)
         BYTE_8 = (self.NRF_RX_ADDRESS_BYTE_3)
-        BYTE_9 = (self.NRF_CRC_MODE_16_BIT + self.NRF_CRC_EN_YES + self.NRF_XOF_16Hz + self.NRF_CRC_EN_NO + self.NRF_UP_CLK_FREQ_4MHz)
+        BYTE_9 = (self.NRF_CRC_MODE_16_BIT + self.NRF_CRC_EN_YES + self.NRF_XOF_16Hz + self.NRF_CRC_EN_NO + self.NRF_UP_CLK_FREQ_500kHz)
 
         config_bytes = [self.NRF_WC_COMMAND, BYTE_0, BYTE_1, BYTE_2, BYTE_3, BYTE_4, BYTE_5, BYTE_6, BYTE_7, BYTE_8, BYTE_9]
 
         #writing config bytes to module
         self.cs.value(0)
 
-        for _ in range(self.NRF_RF_CONFIG_BUFFER_LENGHT):
+        for _ in range(self.NRF_RF_CONFIG_BUFFER_LENGHT + 1):
             print(config_bytes[_])
             self._write(config_bytes[_])
         
@@ -220,7 +219,7 @@ class NRF905:
         self.ce.value(0)
 
     def _rx_packet(self) -> None:
-        utime.sleep_ms(100)
+        utime.sleep_ms(10)
 
         self.ce.value(0)
         self.cs.value(0)

@@ -7,4 +7,4 @@ while True:
     radio.RX()
 
     print(radio.NRF_RX_BUFFER)
-
+    radio.NRF_RX_BUFFER = [0x00] * radio.NRF_RX_BUFFER_LENGHT
