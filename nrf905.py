@@ -39,6 +39,7 @@ class NRF905:
     NRF_TX_PW_16_BYTE = 0x10
     NRF_TX_PW_32_BYTE = 0x20
 
+    #this is default address for rx and tx
     NRF_RX_ADDRESS_BYTE_0 = 0xE7
     NRF_RX_ADDRESS_BYTE_1 = 0xE7
     NRF_RX_ADDRESS_BYTE_2 = 0xE7
@@ -241,6 +242,7 @@ class NRF905:
 
     def RX(self):
         self._set_rx_mode()
+        #uncomment to wait for whole packet arrive
         #while(self._check_DR() == 0x00): pass
         utime.sleep_ms(40)
         self._rx_packet()
