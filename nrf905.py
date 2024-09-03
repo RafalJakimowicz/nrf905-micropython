@@ -40,15 +40,15 @@ class NRF905:
     NRF_TX_PW_16_BYTE = 0x10
     NRF_TX_PW_32_BYTE = 0x20
 
-    NRF_RX_ADDRESS_BYTE_0 = 0xCC
-    NRF_RX_ADDRESS_BYTE_1 = 0xCC
-    NRF_RX_ADDRESS_BYTE_2 = 0xCC
-    NRF_RX_ADDRESS_BYTE_3 = 0xCC
+    NRF_RX_ADDRESS_BYTE_0 = 0xE7
+    NRF_RX_ADDRESS_BYTE_1 = 0xE7
+    NRF_RX_ADDRESS_BYTE_2 = 0xE7
+    NRF_RX_ADDRESS_BYTE_3 = 0xE7
 
-    NRF_TX_ADDRESS_0 = 0xCC
-    NRF_TX_ADDRESS_1 = 0xCC
-    NRF_TX_ADDRESS_2 = 0xCC
-    NRF_TX_ADDRESS_3 = 0xCC
+    NRF_TX_ADDRESS_0 = 0xE7
+    NRF_TX_ADDRESS_1 = 0xE7
+    NRF_TX_ADDRESS_2 = 0xE7
+    NRF_TX_ADDRESS_3 = 0xE7
 
     NRF_UP_CLK_FREQ_4MHz = 0x00
     NRF_UP_CLK_FREQ_2MHz = 0x01
@@ -137,11 +137,12 @@ class NRF905:
         self.cs.value(0)
 
         for _ in range(self.NRF_RF_CONFIG_BUFFER_LENGHT):
+            print(config_bytes[_])
             self._write(config_bytes[_])
         
         self.cs.value(1)
 
-    def _write(data):
+    def _write(self, data):
         s = 0x08
         while s > 0:
             if (data & 0x80) != 0:
@@ -157,7 +158,7 @@ class NRF905:
 
             s -= 1
 
-    def _read() -> int(base=16):
+    def _read(self) -> int(base=16):
         s = 0x08
         data = 0x00
 
@@ -176,23 +177,23 @@ class NRF905:
         return data
 
 
-    def _set_tx_mode():
+    def _set_tx_mode(self):
         self.txe.value(1)
         self.ce.value(1)
         utime.sleep_ms(40)
 
-    def _set_rx_mode():
+    def _set_rx_mode(self):
         self.txe.value(0)
         self.ce.value(1)
         utime.sleep_ms(40)
 
-    def _check_DR():
+    def _check_DR(self):
         if(self.dr.value() != 0):
             return 0x01
         else:
             return 0x00
 
-    def _tx_packet():
+    def _tx_packet(self):
         TX_ADDRESS = [0x00] * self.NRF_TX_ADDRESS_LENGHT
 
         TX_ADDRESS = [self.NRF_TX_ADDRESS_0, self.NRF_TX_ADDRESS_1, self.NRF_TX_ADDRESS_2, self.NRF_TX_ADDRESS_3]
@@ -218,8 +219,8 @@ class NRF905:
         utime.sleep_ms(40)
         self.ce.value(0)
 
-    def _rx_packet():
-        time.sleep(0.1)
+    def _rx_packet(self) -> None:
+        utime.sleep_ms(100)
 
         self.ce.value(0)
         self.cs.value(0)
@@ -229,19 +230,19 @@ class NRF905:
         self._write(self.NRF_RRP_COMMAND)
 
         for _ in range(self.NRF_RX_BUFFER_LENGHT):
-            NRF_RX_BUFFER[_] = self._read()
+            self.NRF_RX_BUFFER[_] = self._read()
 
         self.cs.value(1)
         utime.sleep_ms(40)
         self.ce.value(1)
 
-    def TX():
+    def TX(self):
         self._set_tx_mode()
         self._tx_packet()
 
-    def RX():
+    def RX(self):
         self._set_rx_mode()
-        while(self._check_DR() == 0x00): pass
+        #while(self._check_DR() == 0x00): pass
         utime.sleep_ms(40)
         self._rx_packet()
         utime.sleep_ms(40)
