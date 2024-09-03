@@ -1,5 +1,5 @@
 import machine
-import time
+import utime
 
 
 class NRF905:
@@ -136,7 +136,7 @@ class NRF905:
         #writing config bytes to module
         self.cs.value(0)
 
-        for _ in self.NRF_RF_CONFIG_BUFFER_LENGHT:
+        for _ in range(self.NRF_RF_CONFIG_BUFFER_LENGHT):
             self._write(config_bytes[_])
         
         self.cs.value(1)
@@ -176,21 +176,74 @@ class NRF905:
         return data
 
 
-    def set_tx_mode():
+    def _set_tx_mode():
         self.txe.value(1)
         self.ce.value(1)
-        time.sleep(0.04)
+        utime.sleep_ms(40)
 
-    def set_rx_mode():
+    def _set_rx_mode():
         self.txe.value(0)
         self.ce.value(1)
-        time.sleep(0.04)
+        utime.sleep_ms(40)
 
-    def check_DR():
+    def _check_DR():
         if(self.dr.value() != 0):
             return 0x01
         else:
             return 0x00
 
-    
+    def _tx_packet():
+        TX_ADDRESS = [0x00] * self.NRF_TX_ADDRESS_LENGHT
+
+        TX_ADDRESS = [self.NRF_TX_ADDRESS_0, self.NRF_TX_ADDRESS_1, self.NRF_TX_ADDRESS_2, self.NRF_TX_ADDRESS_3]
+
+        self.cs.value(0)
+        self._write(self.NRF_WC_COMMAND)
+
+        for _ in range(self.NRF_TX_BUFFER_LENGHT):
+            self._write(self.NRF_TX_BUFFER[_])
+
+        self.cs.value(1)
+        utime.sleep_ms(1)
+
+        self.cs.value(0)
+
+        self._write(self.NRF_WTP_COMMAND)
+
+        for _ in range(self.NRF_TX_ADDRESS_LENGHT):
+            self._write(TX_ADDRESS[_])
+
+        self.cs.value(1)
+        self.ce.value(1)
+        utime.sleep_ms(40)
+        self.ce.value(0)
+
+    def _rx_packet():
+        time.sleep(0.1)
+
+        self.ce.value(0)
+        self.cs.value(0)
+
+        utime.sleep_ms(1)
+
+        self._write(self.NRF_RRP_COMMAND)
+
+        for _ in range(self.NRF_RX_BUFFER_LENGHT):
+            NRF_RX_BUFFER[_] = self._read()
+
+        self.cs.value(1)
+        utime.sleep_ms(40)
+        self.ce.value(1)
+
+    def TX():
+        self._set_tx_mode()
+        self._tx_packet()
+
+    def RX():
+        self._set_rx_mode()
+        while(self._check_DR() == 0x00): pass
+        utime.sleep_ms(40)
+        self._rx_packet()
+        utime.sleep_ms(40)
+
 
