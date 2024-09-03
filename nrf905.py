@@ -85,11 +85,15 @@ class NRF905:
     NRF_TX_BUFFER = [0x00] * NRF_TX_BUFFER_LENGHT
     NRF_RX_BUFFER = [0x00] * NRF_RX_BUFFER_LENGHT
 
+    #TODO ZROB CALE SPI RECZNIE "C:\Users\Ja\Downloads\1614790577_nrf905_transceiv_other_other\NRF905_Demo\TX\Libraries\NRF905.c"
+    #"C:\Users\Ja\Downloads\1614790577_nrf905_transceiv_other_other\NRF905_Demo\TX\Libraries\NRF905.h"
+    #
 
-
-    def __init__ (self, spi, ce, txe, pwr, cd, am, dr, cs):
+    def __init__ (self, sck, mosi, miso, ce, txe, pwr, cd, am, dr, cs):
         """
-        SPI - SPI connection -> must be passed co communicate
+        SCK - system clock 
+        MOSI - system in
+        MISO - system out
         CE - standby -> High = TX/RX, Low = standby
         TXE - mode -> High = TX, Low = RX
         PWR - power-up -> High = on, Low = off
@@ -98,17 +102,22 @@ class NRF905:
         DR - data ready -> High when finished transmitting/High when new data recieved
         CS - chip select -> Used to write command to spi
         """
-        self.spi = spi
+        self.mosi = machine.Pin(mosi, machine.Pin.OUT)
+        self.miso = machine.Pin(miso, machine.Pin.IN)
+        self.sck = machine.Pin(sck, machine.Pin.OUT)
         self.ce = machine.Pin(ce, machine.Pin.OUT)
         self.txe = machine.Pin(txe, machine.Pin.OUT)
         self.pwr = machine.Pin(pwr, machine.Pin.OUT)
         self.cd = machine.Pin(cd, machine.Pin.OUT)
         self.am = machine.Pin(am, machine.Pin.OUT)
         self.dr = machine.Pin(dr, machine.Pin.IN)
-        self.cs = machine.Pin(cs, machine.Pin.OUT, value=1)
+        self.cs = machine.Pin(cs, machine.Pin.OUT)
 
         self.pwr.value(1)
         self.txe.value(0)
+        self.ce.value(0)
+        self.sck.value(0)
+        self.cs.value(1)
 
         #config bytes
         BYTE_0 = (self.NRF_CHANNEL & 0x00FF)
@@ -124,12 +133,64 @@ class NRF905:
 
         config_bytes = [self.NRF_WC_COMMAND, BYTE_0, BYTE_1, BYTE_2, BYTE_3, BYTE_4, BYTE_5, BYTE_6, BYTE_7, BYTE_8, BYTE_9]
 
-        #writing config value via spi to module
-        try:
-            cs.value(0)
-            spi.write(config_bytes)
-        finally:
-            cs.value(1)
+        #writing config bytes to module
+        self.cs.value(0)
 
-    def read
+        for _ in self.NRF_RF_CONFIG_BUFFER_LENGHT:
+            self._write(config_bytes[_])
+        
+        self.cs.value(1)
+
+    def _write(data):
+        s = 0x08
+        while s > 0:
+            if (data & 0x80) != 0:
+                self.mosi.value(1)
+            else:
+                self.mosi.value(0)
+
+            self.sck.value(1)
+            
+            data <<= 0x01
+
+            self.sck.value(0)
+
+            s -= 1
+
+    def _read() -> int(base=16):
+        s = 0x08
+        data = 0x00
+
+        while s > 0:
+            data <<= 1
+
+            self.sck.value(1)
+
+            if self.miso.value():
+                data |= 0x01
+
+            self.sck.value(0)
+
+            s -= 1
+
+        return data
+
+
+    def set_tx_mode():
+        self.txe.value(1)
+        self.ce.value(1)
+        time.sleep(0.04)
+
+    def set_rx_mode():
+        self.txe.value(0)
+        self.ce.value(1)
+        time.sleep(0.04)
+
+    def check_DR():
+        if(self.dr.value() != 0):
+            return 0x01
+        else:
+            return 0x00
+
+    
 
