@@ -3,7 +3,7 @@ import utime
 
 
 class NRF905:
-    NRF_CHANNEL = 40
+    NRF_CHANNEL = 66 #0-511
 
     NRF_433Mhz = 0x00
     NRF_868Mhz_915Mhz = 0x02
@@ -91,17 +91,18 @@ class NRF905:
 
     def __init__ (self, sck, tx, rx, ce, txe, pwr, cd, am, dr, cs):
         """
-        SCK - system clock 
-        RX - system in
-        TX - system out
+        SCK - system clock -> SPI clock
+        RX - system in -> SPI receiver
+        TX - system out -> SPI tranceiver
         CE - standby -> High = TX/RX, Low = standby
         TXE - mode -> High = TX, Low = RX
         PWR - power-up -> High = on, Low = off
         CD - carrier detect -> High when signal is detected
         AM - adress match -> High when receiving a packet that has same adress as one put in device
         DR - data ready -> High when finished transmitting/High when new data recieved
-        CS - chip select -> Used to write command to spi
+        CS - chip select -> SPI chip select used for writing commands to module
         """
+        #innit pins
         self.tx = machine.Pin(tx, machine.Pin.OUT)
         self.rx = machine.Pin(rx, machine.Pin.IN)
         self.sck = machine.Pin(sck, machine.Pin.OUT)
@@ -142,7 +143,10 @@ class NRF905:
         self.cs.value(1)
 
     def _write(self, data):
-        s = 0x08
+        """
+        writes single byte do module
+        """
+        s = 0x08 #counter for bits (one byte)
         while s > 0:
             if (data & 0x80) != 0:
                 self.tx.value(1)
@@ -158,8 +162,11 @@ class NRF905:
             s -= 1
 
     def _read(self):
-        s = 0x08
-        data = 0x00
+        """
+        reading byte from module
+        """
+        s = 0x08 #bits counter (one byte)
+        data = 0x00 #byte stored
 
         while s > 0:
             data <<= 1
@@ -177,29 +184,33 @@ class NRF905:
 
 
     def _set_tx_mode(self):
-        self.txe.value(1)
-        self.ce.value(1)
+        self.txe.value(1) #setting module as transceiver
+        self.ce.value(1) #waking from standby mode
         utime.sleep_ms(40)
 
     def _set_rx_mode(self):
-        self.txe.value(0)
-        self.ce.value(1)
+        self.txe.value(0) #setting module as receiver
+        self.ce.value(1) #waking from standby mode
         utime.sleep_ms(40)
 
     def _check_DR(self):
-        if(self.dr.value() != 0):
+        if(self.dr.value() != 0): #check if whole packet arrive
             return 0x01
         else:
             return 0x00
 
     def _tx_packet(self):
+        """
+        send tranceiver packet to passed adress
+        """
+        #setting adress
         TX_ADDRESS = [0x00] * self.NRF_TX_ADDRESS_LENGHT
-
         TX_ADDRESS = [self.NRF_TX_ADDRESS_0, self.NRF_TX_ADDRESS_1, self.NRF_TX_ADDRESS_2, self.NRF_TX_ADDRESS_3]
 
         self.cs.value(0)
         self._write(self.NRF_WTP_COMMAND)
         
+        #writing packet via SPI
         for _ in bytearray(self.NRF_TX_BUFFER):
             self._write(_)
 
@@ -210,6 +221,7 @@ class NRF905:
 
         self._write(self.NRF_WTA_COMMAND)
 
+        #writing adress for packet to arrive
         for _ in TX_ADDRESS:
             self._write(_)
 
@@ -219,6 +231,9 @@ class NRF905:
         self.ce.value(0)
 
     def _rx_packet(self) -> None:
+        """
+        receiving packet from module
+        """
         utime.sleep_ms(10)
 
         self.ce.value(0)
@@ -228,6 +243,7 @@ class NRF905:
 
         self._write(self.NRF_RRP_COMMAND)
 
+        #reading packet to buffer
         for _ in range(self.NRF_RX_BUFFER_LENGHT):
             self.NRF_RX_BUFFER[_] = self._read()
 
@@ -236,15 +252,15 @@ class NRF905:
         self.ce.value(1)
 
     def TX(self):
-        self._set_tx_mode()
-        self._tx_packet()
+        self._set_tx_mode() #setting in tranceiver mode
+        self._tx_packet() #sending packet
 
     def RX(self):
-        self._set_rx_mode()
-        #uncomment to wait for whole packet arrive
+        self._set_rx_mode() #setting to receiver mode
+        #not comment to wait for whole packet arrive
         while(self._check_DR() == 0x00): pass
         utime.sleep_ms(40)
-        self._rx_packet()
+        self._rx_packet() #getting packet
         utime.sleep_ms(40)
 
 
