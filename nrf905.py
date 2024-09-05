@@ -89,11 +89,11 @@ class NRF905:
     #"C:\Users\Ja\Downloads\1614790577_nrf905_transceiv_other_other\NRF905_Demo\TX\Libraries\NRF905.h"
     #
 
-    def __init__ (self, sck, mosi, miso, ce, txe, pwr, cd, am, dr, cs):
+    def __init__ (self, sck, tx, rx, ce, txe, pwr, cd, am, dr, cs):
         """
         SCK - system clock 
-        MOSI - system in
-        MISO - system out
+        RX - system in
+        TX - system out
         CE - standby -> High = TX/RX, Low = standby
         TXE - mode -> High = TX, Low = RX
         PWR - power-up -> High = on, Low = off
@@ -102,8 +102,8 @@ class NRF905:
         DR - data ready -> High when finished transmitting/High when new data recieved
         CS - chip select -> Used to write command to spi
         """
-        self.mosi = machine.Pin(mosi, machine.Pin.OUT)
-        self.miso = machine.Pin(miso, machine.Pin.IN)
+        self.tx = machine.Pin(tx, machine.Pin.OUT)
+        self.rx = machine.Pin(rx, machine.Pin.IN)
         self.sck = machine.Pin(sck, machine.Pin.OUT)
         self.ce = machine.Pin(ce, machine.Pin.OUT)
         self.txe = machine.Pin(txe, machine.Pin.OUT)
@@ -145,9 +145,9 @@ class NRF905:
         s = 0x08
         while s > 0:
             if (data & 0x80) != 0:
-                self.mosi.value(1)
+                self.tx.value(1)
             else:
-                self.mosi.value(0)
+                self.tx.value(0)
 
             self.sck.value(1)
             
@@ -166,7 +166,7 @@ class NRF905:
 
             self.sck.value(1)
 
-            if self.miso.value():
+            if self.rx.value():
                 data |= 0x01
 
             self.sck.value(0)
