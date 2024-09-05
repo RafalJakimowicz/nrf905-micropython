@@ -1,7 +1,7 @@
 import nrf905
 import utime
 
-radio = nrf905.NRF905(18, 19, 16, 27, 28, 26, 22, 20, 21, 18)
+radio = nrf905.NRF905(18, 19, 16, 27, 28, 26, 22, 20, 21, 17)
 
 while True:
     radio.RX()

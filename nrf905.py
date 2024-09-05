@@ -3,7 +3,7 @@ import utime
 
 
 class NRF905:
-    NRF_CHANNEL = 66
+    NRF_CHANNEL = 40
 
     NRF_433Mhz = 0x00
     NRF_868Mhz_915Mhz = 0x02
@@ -135,10 +135,9 @@ class NRF905:
 
         #writing config bytes to module
         self.cs.value(0)
-
-        for _ in range(self.NRF_RF_CONFIG_BUFFER_LENGHT + 1):
-            print(config_bytes[_])
-            self._write(config_bytes[_])
+        print(config_bytes)
+        for _ in config_bytes:
+            self._write(_)
         
         self.cs.value(1)
 
@@ -158,7 +157,7 @@ class NRF905:
 
             s -= 1
 
-    def _read(self) -> int(base=16):
+    def _read(self):
         s = 0x08
         data = 0x00
 
@@ -199,20 +198,20 @@ class NRF905:
         TX_ADDRESS = [self.NRF_TX_ADDRESS_0, self.NRF_TX_ADDRESS_1, self.NRF_TX_ADDRESS_2, self.NRF_TX_ADDRESS_3]
 
         self.cs.value(0)
-        self._write(self.NRF_WC_COMMAND)
-
-        for _ in range(self.NRF_TX_BUFFER_LENGHT):
-            self._write(self.NRF_TX_BUFFER[_])
+        self._write(self.NRF_WTP_COMMAND)
+        
+        for _ in bytearray(self.NRF_TX_BUFFER):
+            self._write(_)
 
         self.cs.value(1)
         utime.sleep_ms(1)
 
         self.cs.value(0)
 
-        self._write(self.NRF_WTP_COMMAND)
+        self._write(self.NRF_WTA_COMMAND)
 
-        for _ in range(self.NRF_TX_ADDRESS_LENGHT):
-            self._write(TX_ADDRESS[_])
+        for _ in TX_ADDRESS:
+            self._write(_)
 
         self.cs.value(1)
         self.ce.value(1)
