@@ -243,7 +243,7 @@ class NRF905:
     def RX(self):
         self._set_rx_mode()
         #uncomment to wait for whole packet arrive
-        while(self._check_DR() == 0x00): pass
+        #while(self._check_DR() == 0x00): pass
         utime.sleep_ms(40)
         self._rx_packet()
         utime.sleep_ms(40)

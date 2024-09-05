@@ -42,16 +42,14 @@ class NRF905:
     def writeConfig(self):
         self.cs.value(0)
         self.spi.write(self.NRF_WC_COMMAND)
-        for _ in self.config_bytes:
-            self.spi.write(_)
+        self.spi.write(self.config_bytes)
         self.cs.value(1)
 
     def readConfig(self):
         buff = [0x00] * 10
         self.cs.value(0)
         self.spi.write(self.NRF_RC_COMMAND)
-        for _ in range(10):
-            buff[_] = self.spi.write(0x00)
+        buff = self.spi.read(10, 0x00)
         self.cs.value(1)
 
     def rxPacket(self):
@@ -61,9 +59,7 @@ class NRF905:
         utime.sleep_ms(1)
         self.spi.write(bytearray(self.NRF_RRP_COMMAND))
         utime.sleep_ms(1)
-        for _ in range(32):
-            buff[_] = self.spi.read(1, 0x00)
-            utime.sleep_ms(1)
+        buff = self.spi.read(32, 0x00)
         self.cs.value(1)
         utime.sleep_ms(1)
         self.ce.value(1)
@@ -73,14 +69,12 @@ class NRF905:
     def txPacket(self, _packet):
         self.cs.value(0)
         self.spi.write(bytearray(self.NRF_WTP_COMMAND))
-        for _ in _packet:
-            self.spi.write(bytearray(_))
+        self.spi.write(bytearray(_packet))
         self.cs.value(1)
         utime.sleep_ms(1)
         self.cs.value(0)
         self.spi.write(bytearray(self.NRF_WTA_COMMAND))
-        for _ in self.address_bytes:
-            self.spi.write(bytearray(_))
+        self.spi.write(bytearray(self.address_bytes))
         self.cs.value(1)
         self.ce.value(1)
         utime.sleep_ms(1)
