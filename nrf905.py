@@ -108,8 +108,8 @@ class NRF905:
         self.ce = machine.Pin(ce, machine.Pin.OUT)
         self.txe = machine.Pin(txe, machine.Pin.OUT)
         self.pwr = machine.Pin(pwr, machine.Pin.OUT)
-        self.cd = machine.Pin(cd, machine.Pin.OUT)
-        self.am = machine.Pin(am, machine.Pin.OUT)
+        self.cd = machine.Pin(cd, machine.Pin.IN)
+        self.am = machine.Pin(am, machine.Pin.IN)
         self.dr = machine.Pin(dr, machine.Pin.IN)
         self.cs = machine.Pin(cs, machine.Pin.OUT)
 
@@ -243,7 +243,7 @@ class NRF905:
     def RX(self):
         self._set_rx_mode()
         #uncomment to wait for whole packet arrive
-        #while(self._check_DR() == 0x00): pass
+        while(self._check_DR() == 0x00): pass
         utime.sleep_ms(40)
         self._rx_packet()
         utime.sleep_ms(40)
