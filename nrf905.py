@@ -3,7 +3,7 @@ import utime
 
 
 class NRF905:
-    NRF_CHANNEL = 66 #0-511
+    NRF_CHANNEL = 106 #0-511
 
     NRF_433Mhz = 0x00
     NRF_868Mhz_915Mhz = 0x02
